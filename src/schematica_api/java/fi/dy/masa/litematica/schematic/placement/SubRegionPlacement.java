@@ -15,25 +15,23 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils;
+package fi.dy.masa.litematica.schematic.placement;
 
-import baritone.Baritone;
-import baritone.api.process.IBaritoneProcess;
-import baritone.api.utils.Helper;
-import baritone.api.utils.IPlayerContext;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 
-public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper {
+public class SubRegionPlacement {
 
-    protected final Baritone baritone;
-    protected final IPlayerContext ctx;
-
-    public BaritoneProcessHelper(Baritone baritone) {
-        this.baritone = baritone;
-        this.ctx = baritone.getPlayerContext();
+    public BlockPos getPos() {
+        throw new LinkageError();
     }
 
-    @Override
-    public boolean isTemporary() {
-        return false;
+    public Rotation getRotation() {
+        throw new LinkageError();
+    }
+
+    public Mirror getMirror() {
+        throw new LinkageError();
     }
 }

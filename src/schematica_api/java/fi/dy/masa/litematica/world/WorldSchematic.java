@@ -15,25 +15,13 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils;
+package fi.dy.masa.litematica.world;
 
-import baritone.Baritone;
-import baritone.api.process.IBaritoneProcess;
-import baritone.api.utils.Helper;
-import baritone.api.utils.IPlayerContext;
+import net.minecraft.world.level.Level;
 
-public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper {
-
-    protected final Baritone baritone;
-    protected final IPlayerContext ctx;
-
-    public BaritoneProcessHelper(Baritone baritone) {
-        this.baritone = baritone;
-        this.ctx = baritone.getPlayerContext();
-    }
-
-    @Override
-    public boolean isTemporary() {
-        return false;
+public abstract class WorldSchematic extends Level {
+    private WorldSchematic() {
+        super(null, null, null, null, false, false, 0, 0);
+        throw new LinkageError();
     }
 }

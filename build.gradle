@@ -39,11 +39,11 @@ allprojects {
     version = rootProject.mod_version
     group = rootProject.maven_group
 
-    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_21
-    
+    sourceCompatibility = targetCompatibility = JavaVersion.toVersion(project.java_version)
+
     java {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(21))
+            languageVersion.set(JavaLanguageVersion.of(sourceCompatibility.majorVersion.toInteger()))
         }
     }
 
@@ -80,11 +80,9 @@ allprojects {
     }
 
     dependencies {
-        compileOnly "org.spongepowered:mixin:0.8"
-        compileOnly "org.ow2.asm:asm:9.7"
-        // The following line declares the yarn mappings you may select this one as well.
-        // mappings "net.fabricmc:yarn:1.17.1+build.32:v2"
-        //launchImplementation('dev.babbaj:nether-pathfinder:1.3.0')
+        compileOnly "org.spongepowered:mixin:${project.mixin_version}"
+        compileOnly "org.ow2.asm:asm:${project.asm_version}"
+
         implementation "dev.babbaj:nether-pathfinder:${project.nether_pathfinder_version}"
 
         implementation 'com.google.code.findbugs:jsr305:3.0.2'
@@ -96,7 +94,7 @@ allprojects {
         mappings {
             intermediary()
             mojmap()
-            parchment("1.20.6", "2024.05.01")
+            parchment("1.21.5", "2025.03.23")
 
             devFallbackNamespace "official"
         }
@@ -105,7 +103,7 @@ allprojects {
     tasks.withType(JavaCompile).configureEach {
         it.options.encoding = "UTF-8"
 
-        def targetVersion = 21
+        def targetVersion = project.java_version.toInteger()
         if (JavaVersion.current().isJava9Compatible()) {
             it.options.release = targetVersion
         }

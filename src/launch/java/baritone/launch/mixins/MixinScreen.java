@@ -29,19 +29,28 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import static baritone.api.command.IBaritoneChatControl.FORCE_COMMAND_PREFIX;
+
 @Mixin(Screen.class)
 public abstract class MixinScreen implements IGuiScreen {
 
     //TODO: switch to enum extention with mixin 9.0 or whenever Mumfrey gets around to it
-    @Inject(at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;error(Ljava/lang/String;Ljava/lang/Object;)V", remap = false, ordinal = 1), method = "handleComponentClicked", cancellable = true)
-    public void handleCustomClickEvent(Style style, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "handleComponentClicked", at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/multiplayer/ClientPacketListener;sendUnsignedCommand(Ljava/lang/String;)Z"
+    ), cancellable = true)
+    public void handleCustomClickEvent(final Style style, final CallbackInfoReturnable<Boolean> cir) {
         ClickEvent clickEvent = style.getClickEvent();
         if (clickEvent == null) {
             return;
         }
+        if (!(clickEvent instanceof ClickEvent.RunCommand(String command))) return;
+        if (!command.startsWith(FORCE_COMMAND_PREFIX)) {
+            return;
+        }
         IBaritone baritone = BaritoneAPI.getProvider().getPrimaryBaritone();
         if (baritone != null) {
-            baritone.getGameEventHandler().onSendChatMessage(new ChatEvent(clickEvent.getValue()));
+            baritone.getGameEventHandler().onSendChatMessage(new ChatEvent(command));
         }
         cir.setReturnValue(true);
         cir.cancel();

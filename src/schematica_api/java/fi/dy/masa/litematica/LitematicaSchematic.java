@@ -15,25 +15,13 @@
  * along with Baritone.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package baritone.utils;
+package fi.dy.masa.litematica.schematic;
 
-import baritone.Baritone;
-import baritone.api.process.IBaritoneProcess;
-import baritone.api.utils.Helper;
-import baritone.api.utils.IPlayerContext;
+import net.minecraft.core.BlockPos;
 
-public abstract class BaritoneProcessHelper implements IBaritoneProcess, Helper {
+public class LitematicaSchematic {
 
-    protected final Baritone baritone;
-    protected final IPlayerContext ctx;
-
-    public BaritoneProcessHelper(Baritone baritone) {
-        this.baritone = baritone;
-        this.ctx = baritone.getPlayerContext();
-    }
-
-    @Override
-    public boolean isTemporary() {
-        return false;
+    public BlockPos getAreaSize(String name) {
+        throw new LinkageError();
     }
 }

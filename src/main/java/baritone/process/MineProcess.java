@@ -18,14 +18,12 @@
 package baritone.process;
 
 import baritone.Baritone;
-import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.*;
 import baritone.api.process.IMineProcess;
 import baritone.api.process.PathingCommand;
 import baritone.api.process.PathingCommandType;
 import baritone.api.utils.*;
-import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import baritone.cache.CachedChunk;
 import baritone.pathing.movement.CalculationContext;
@@ -37,7 +35,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.AirBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.*;
@@ -73,10 +74,9 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         if (desiredQuantity > 0) {
-            int curr = ctx.player().getInventory().items.stream()
+            int curr = ctx.player().getInventory().getNonEquipmentItems().stream()
                     .filter(stack -> filter.has(stack))
                     .mapToInt(ItemStack::getCount).sum();
-            System.out.println("Currently have " + curr + " valid items");
             if (curr >= desiredQuantity) {
                 logDirect("Have " + curr + " valid items");
                 cancel();
@@ -100,10 +100,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 return null;
             }
         }
-        // Wait for pause interactions
-        if (AltoClefSettings.getInstance().isInteractionPaused()) {
-            return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-        }
+
         updateLoucaSystem();
         int mineGoalUpdateInterval = Baritone.settings().mineGoalUpdateInterval.value;
         List<BlockPos> curr = new ArrayList<>(knownOreLocations);
@@ -121,7 +118,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
                 .filter(pos -> pos.getX() == ctx.playerFeet().getX() && pos.getZ() == ctx.playerFeet().getZ())
                 .filter(pos -> pos.getY() >= ctx.playerFeet().getY())
                 .filter(pos -> !(BlockStateInterface.get(ctx, pos).getBlock() instanceof AirBlock)) // after breaking a block, it takes mineGoalUpdateInterval ticks for it to actually update this list =(
-                .min(Comparator.comparingDouble(ctx.playerFeet()::distSqr));
+                .min(Comparator.comparingDouble(ctx.playerFeet().above()::distSqr));
         baritone.getInputOverrideHandler().clearAllKeys();
         if (shaft.isPresent() && ctx.player().onGround()) {
             BlockPos pos = shaft.get();
@@ -362,7 +359,6 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
     public static List<BlockPos> searchWorld(CalculationContext ctx, BlockOptionalMetaLookup filter, int max, List<BlockPos> alreadyKnown, List<BlockPos> blacklist, List<BlockPos> dropped) {
         List<BlockPos> locs = new ArrayList<>();
         List<Block> untracked = new ArrayList<>();
-        int maxTotal = max * filter.blocks().size();
         for (BlockOptionalMeta bom : filter.blocks()) {
             Block block = bom.getBlock();
             if (CachedChunk.BLOCKS_TO_KEEP_TRACK_OF.contains(block)) {
@@ -383,7 +379,7 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
         locs = prune(ctx, locs, filter, max, blacklist, dropped);
 
-        if (!untracked.isEmpty() || (Baritone.settings().extendCacheOnThreshold.value && locs.size() < maxTotal)) {
+        if (!untracked.isEmpty() || (Baritone.settings().extendCacheOnThreshold.value && locs.size() < max)) {
             locs.addAll(BaritoneAPI.getProvider().getWorldScanner().scanChunkRadius(
                     ctx.getBaritone().getPlayerContext(),
                     filter,
@@ -489,12 +485,11 @@ public final class MineProcess extends BaritoneProcessHelper implements IMinePro
 
 
     public static boolean plausibleToBreak(CalculationContext ctx, BlockPos pos) {
-        if (ctx.get(pos).getBlock() instanceof EndPortalFrameBlock ||
-                ctx.get(pos).getBlock() instanceof EndPortalBlock ||
-                ctx.get(pos).getBlock() == Blocks.LAVA) {
-            return true;
+        BlockState state = ctx.bsi.get0(pos);
+        if (MovementHelper.getMiningDurationTicks(ctx, pos.getX(), pos.getY(), pos.getZ(), state, true) >= COST_INF) {
+            return false;
         }
-        if (MovementHelper.getMiningDurationTicks(ctx, pos.getX(), pos.getY(), pos.getZ(), ctx.bsi.get0(pos), true) >= COST_INF) {
+        if (MovementHelper.avoidBreaking(ctx.bsi, pos.getX(), pos.getY(), pos.getZ(), state)) {
             return false;
         }
 

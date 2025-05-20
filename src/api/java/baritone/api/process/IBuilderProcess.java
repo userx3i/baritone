@@ -24,6 +24,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.state.BlockState;
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Brady
@@ -64,10 +65,6 @@ public interface IBuilderProcess extends IBaritoneProcess {
 
     boolean isPaused();
 
-    void popStack();
-
-    boolean isFromAltoclefFinished();
-
     void resume();
 
     void clearArea(BlockPos corner1, BlockPos corner2);
@@ -78,4 +75,17 @@ public interface IBuilderProcess extends IBaritoneProcess {
      * cause it to give up. This is updated every tick, but only while the builder process is active.
      */
     List<BlockState> getApproxPlaceable();
+    /**
+     * Returns the lower bound of the current mining layer if mineInLayers is true.
+     * If mineInLayers is false, this will return an empty optional.
+     * @return The lower bound of the current mining layer
+     */
+    Optional<Integer> getMinLayer();
+
+    /**
+     * Returns the upper bound of the current mining layer if mineInLayers is true.
+     * If mineInLayers is false, this will return an empty optional.
+     * @return The upper bound of the current mining layer
+     */
+    Optional<Integer> getMaxLayer();
 }

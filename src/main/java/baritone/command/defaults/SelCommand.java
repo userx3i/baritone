@@ -43,7 +43,6 @@ import baritone.utils.BlockStateInterface;
 import baritone.utils.IRenderer;
 import baritone.utils.schematic.StaticSchematic;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.Blocks;
@@ -76,7 +75,7 @@ public class SelCommand extends Command {
                 float opacity = Baritone.settings().selectionOpacity.value;
                 float lineWidth = Baritone.settings().selectionLineWidth.value;
                 boolean ignoreDepth = Baritone.settings().renderSelectionIgnoreDepth.value;
-                BufferBuilder bufferBuilder = IRenderer.startLines(color, opacity, lineWidth, ignoreDepth);
+                BufferBuilder bufferBuilder = IRenderer.startLines(color, opacity, lineWidth);
                 IRenderer.emitAABB(bufferBuilder, event.getModelViewStack(), new AABB(pos1));
                 IRenderer.endLines(bufferBuilder, ignoreDepth);
             }
@@ -228,12 +227,7 @@ public class SelCommand extends Command {
                         }
                     }
                 }
-                ISchematic schematic = new StaticSchematic() {{
-                    states = blockstates;
-                    x = size.getX();
-                    y = size.getY();
-                    z = size.getZ();
-                }};
+                ISchematic schematic = new StaticSchematic(blockstates);
                 composite.put(schematic, min.x - origin.x, min.y - origin.y, min.z - origin.z);
             }
             clipboard = composite;
