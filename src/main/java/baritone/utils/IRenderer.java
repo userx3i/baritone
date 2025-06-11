@@ -51,7 +51,7 @@ public interface IRenderer {
             .withDepthWrite(false)
             .withCull(false)
             .buildSnippet();
-    RenderType linesWithDepthRenderType = BaritoneRenderType.create(
+    RenderType linesWithDepthRenderType = baritone.utils.BaritoneRenderType.create(
             "renderType/baritone_lines_with_depth",
             256,
             RenderPipeline.builder(BARITONE_LINES_SNIPPET)
@@ -59,7 +59,7 @@ public interface IRenderer {
                     .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
                     .build()
     );
-    RenderType linesNoDepthRenderType = BaritoneRenderType.create(
+    RenderType linesNoDepthRenderType = baritone.utils.BaritoneRenderType.create(
             "renderType/baritone_lines_no_depth",
             256,
             RenderPipeline.builder(BARITONE_LINES_SNIPPET)
